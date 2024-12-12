@@ -209,7 +209,7 @@ class bicgstabl {
          * good preconditioner for several subsequent time steps [DeSh12]_.
          */
         template <class Matrix, class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 const Matrix &A, const Precond &P, const Vec1 &rhs, Vec2 &&x) const
         {
             namespace side = preconditioner::side;
@@ -229,7 +229,7 @@ class bicgstabl {
                     norm_rhs = math::identity<scalar_type>();
                 } else {
                     backend::clear(x);
-                    return std::make_tuple(0, norm_rhs);
+                    return std::make_tuple(0,  std::vector<scalar_type>({norm_rhs}) );
                 }
             }
 
@@ -420,7 +420,7 @@ done:
                 backend::axpby(one, *T, one, x);
             }
 
-            return std::make_tuple(iter, zeta / norm_rhs);
+            return std::make_tuple(iter,  std::vector<scalar_type> ({zeta / norm_rhs}) );
         }
 
         /* Computes the solution for the given right-hand side \p rhs. The
@@ -431,7 +431,7 @@ done:
          * solution on output.
          */
         template <class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 const Precond &P, const Vec1 &rhs, Vec2 &&x) const
         {
             return (*this)(P.system_matrix(), P, rhs, x);

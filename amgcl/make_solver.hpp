@@ -128,7 +128,7 @@ class make_solver : public amgcl::detail::non_copyable {
          * \endrst
          */
         template <class Matrix, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 const Matrix &A, const Vec1 &rhs, Vec2 &&x) const
         {
             return S(A, P, rhs, x);
@@ -140,7 +140,7 @@ class make_solver : public amgcl::detail::non_copyable {
          * approximation in input and holds the computed solution on output.
          */
         template <class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(const Vec1 &rhs, Vec2 &&x) const {
+        std::tuple<size_t, std::vector<scalar_type> > operator()(const Vec1 &rhs, Vec2 &&x) const {
             return S(P, rhs, x);
         }
 

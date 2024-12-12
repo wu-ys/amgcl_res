@@ -150,11 +150,13 @@ class cg {
          * good preconditioner for several subsequent time steps [DeSh12]_.
          */
         template <class Matrix, class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 const Matrix &A, const Precond &P, const Vec1 &rhs, Vec2 &&x) const
         {
             static const coef_type one  = math::identity<coef_type>();
             static const coef_type zero = math::zero<coef_type>();
+
+            std::vector<scalar_type> norm_recording;
 
             ios_saver ss(std::cout);
 
@@ -164,9 +166,12 @@ class cg {
                     norm_rhs = math::identity<scalar_type>();
                 } else {
                     backend::clear(x);
-                    return std::make_tuple(0, norm_rhs);
+                    return std::make_tuple(0, std::vector<scalar_type>({norm_rhs}));
                 }
             }
+
+            if (prm.verbose)
+                norm_recording.emplace_back(1.0);
 
             scalar_type eps = std::max(prm.tol * norm_rhs, prm.abstol);
 
@@ -196,11 +201,14 @@ class cg {
                 backend::axpby(-alpha, *q, one, *r);
 
                 res_norm = norm(*r);
-                if (prm.verbose && iter % 5 == 0)
-                    std::cout << iter << "\t" << std::scientific << res_norm / norm_rhs << std::endl;
+                if (prm.verbose)
+                    norm_recording.emplace_back(res_norm / norm_rhs);
             }
 
-            return std::make_tuple(iter, res_norm / norm_rhs);
+            if (!prm.verbose)
+                norm_recording.emplace_back(res_norm / norm_rhs);
+
+            return std::make_tuple(iter, norm_recording);
         }
 
         /* Computes the solution for the given right-hand side \p rhs. The
@@ -211,7 +219,7 @@ class cg {
          * solution on output.
          */
         template <class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type>> operator()(
                 const Precond &P, const Vec1 &rhs, Vec2 &&x) const
         {
             return (*this)(P.system_matrix(), P, rhs, x);

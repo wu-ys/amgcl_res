@@ -151,7 +151,7 @@ class fgmres {
          * good preconditioner for several subsequent time steps [DeSh12]_.
          */
         template <class Matrix, class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 Matrix  const &A,
                 Precond const &P,
                 Vec1    const &rhs,
@@ -166,7 +166,7 @@ class fgmres {
                     norm_rhs = math::identity<scalar_type>();
                 } else {
                     backend::clear(x);
-                    return std::make_tuple(0, norm_rhs);
+                    return std::make_tuple(0, std::vector<scalar_type>({norm_rhs}) );
                 }
             }
 
@@ -237,7 +237,7 @@ class fgmres {
                 backend::lin_comb(j, s, z, math::identity<scalar_type>(), x);
             }
 
-            return std::make_tuple(iter, norm_r / norm_rhs);
+            return std::make_tuple(iter, std::vector<scalar_type>({norm_r / norm_rhs}) );
         }
 
         /* Computes the solution for the given right-hand side \p rhs. The
@@ -248,7 +248,7 @@ class fgmres {
          * solution on output.
          */
         template <class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 Precond const &P,
                 Vec1    const &rhs,
                 Vec2          &x

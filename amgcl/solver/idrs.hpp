@@ -246,7 +246,7 @@ class idrs {
          * good preconditioner for several subsequent time steps [DeSh12]_.
          */
         template <class Matrix, class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 Matrix  const &A,
                 Precond const &Prec,
                 Vec1    const &rhs,
@@ -264,7 +264,7 @@ class idrs {
                     norm_rhs = math::identity<scalar_type>();
                 } else {
                     backend::clear(x);
-                    return std::make_tuple(0, norm_rhs);
+                    return std::make_tuple(0, std::vector<scalar_type> ({norm_rhs}) );
                 }
             }
 
@@ -276,7 +276,7 @@ class idrs {
             scalar_type res_norm = norm(*r);
             if (res_norm <= eps) {
                 // Initial guess is a good enough solution.
-                return std::make_tuple(0, res_norm / norm_rhs);
+                return std::make_tuple(0, std::vector<scalar_type> ({res_norm / norm_rhs}) );
             }
 
             if (prm.smoothing) {
@@ -401,7 +401,7 @@ class idrs {
             if (prm.smoothing)
                 backend::copy(*x_s, x);
 
-            return std::make_tuple(iter, res_norm / norm_rhs);
+            return std::make_tuple(iter, std::vector<scalar_type>({res_norm / norm_rhs}) );
         }
 
         /* Computes the solution for the given right-hand side \p rhs. The
@@ -412,7 +412,7 @@ class idrs {
          * solution on output.
          */
         template <class Precond, class Vec1, class Vec2>
-        std::tuple<size_t, scalar_type> operator()(
+        std::tuple<size_t, std::vector<scalar_type> > operator()(
                 Precond const &P,
                 Vec1    const &rhs,
                 Vec2          &x
